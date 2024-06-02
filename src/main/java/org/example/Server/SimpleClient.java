@@ -11,7 +11,7 @@ public class SimpleClient {
     public SimpleClient() {
         requestHandler = new RESPRequestHandler();
     }
-    void start(){
+    public void start(){
         String serverAddress = "localhost";
         try (Socket socket = new Socket(serverAddress, PORT);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -31,11 +31,6 @@ public class SimpleClient {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public static void main(String[] args) {
-        SimpleClient client = new SimpleClient();
-        client.start();
     }
 }
 
