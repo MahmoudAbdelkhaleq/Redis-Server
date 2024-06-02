@@ -18,6 +18,7 @@ public class Serializer {
             if(!oneWordCommands.contains(commandArray[0].toUpperCase())) {
                 throw new IllegalArgumentException("Invalid command");
             }
+            return "+" + commandArray[0] + "\r\n";
         }
         // If the command is an array,
         serializedCommand = "*" + commandArray.length + "\r\n";
