@@ -12,7 +12,7 @@ public class RESPHandler extends Thread{
     final private Serializer serializer;
     final private Database db;
 //    final static List<String> oneWordResponses = Arrays.asList("OK", "PONG", "QUEUED", "ERR", "BUSY", "WRONGTYPE","(nil)");
-    final static List<String> oneWordCommands = Arrays.asList("OK", "ERROR", "PING", "QUIT", "FLUSHDB", "SAVE", "DBSIZE", "FLUSHALL",
+    final static List<String> oneWordCommands = Arrays.asList("PING", "QUIT", "FLUSHDB", "SAVE", "DBSIZE", "FLUSHALL",
             "TIME", "INFO");
     public RESPHandler() {
         deserializer = new Deserializer();
