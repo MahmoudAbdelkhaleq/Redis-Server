@@ -1,14 +1,13 @@
 package org.example.Server;
 
-import org.example.RESPRequestHandler;
+import org.example.RESPHandler;
 
 import java.io.*;
 import java.net.*;
-import java.util.HashMap;
 
 public class Server {
     final static int SERVER_PORT = 6379;
-    RESPRequestHandler RESPrequestHandler = new RESPRequestHandler();
+    final RESPHandler RESPHandler = new RESPHandler();
     public void start(){
         try {
             // Create a ServerSocket to listen on the specified port
@@ -27,11 +26,22 @@ public class Server {
 
                 // Read and process the client input
                 String clientInput;
-                while ((clientInput = in.readLine())!=null) {
-                    System.out.println("Received from client: " + clientInput);
-                    String output = (String)RESPrequestHandler.deserialize(clientInput);
+                while (true) {
+                    System.out.println("Waiting for client input...");
+                    StringBuilder request = new StringBuilder();
+                    request.append(in.readLine() + "\r\n");
+                    if(request.equals("exit")) {
+                        break;
+                    }
+                    while (!(clientInput = in.readLine()).isEmpty()) {
+                        request.append(clientInput+ "\r\n");
+                    }
+//                    request = new StringBuilder(request.substring(0, request.length()-2));
+                    System.out.println("Received from client: " + request);
+                    String response = RESPHandler.handleRequest(request.toString());
+                    System.out.println("response: " + response);
                     // Respond to the client
-                    out.println("Echo: " + output);
+                    out.println(RESPHandler.serialize(response));
                 }
                 // Close the connection with the client
                 clientSocket.close();
@@ -40,6 +50,11 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void main(String[] args) {
+        Server server = new Server();
+        server.start();
     }
 }
 
