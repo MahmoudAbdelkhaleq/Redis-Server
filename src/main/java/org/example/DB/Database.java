@@ -29,4 +29,30 @@ public class Database {
         public int getDBSize() {
             return keyValues.size();
         }
+
+        public int increment(String key) {
+            if(!keyValues.containsKey(key)) {
+                keyValues.put(key, 0);
+            }
+            if(keyValues.get(key) instanceof Integer) {
+                keyValues.put(key, (Integer)keyValues.get(key) + 1);
+                return (Integer)keyValues.get(key);
+            }
+            else {
+                throw new IllegalArgumentException("Value is not an integer");
+            }
+        }
+        public int decrement(String key) {
+            if(!keyValues.containsKey(key)) {
+                keyValues.put(key, 0);
+            }
+            if(keyValues.get(key) instanceof Integer) {
+                keyValues.put(key, (Integer)keyValues.get(key) - 1);
+                return (Integer)keyValues.get(key);
+            }
+            else {
+                throw new IllegalArgumentException("Value is not an integer");
+            }
+        }
+
 }

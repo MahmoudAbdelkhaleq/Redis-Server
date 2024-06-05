@@ -7,10 +7,10 @@ import org.example.Serialize.Serializer;
 import java.util.Arrays;
 import java.util.List;
 
-public class RESPHandler {
+public class RESPHandler extends Thread{
     final private Deserializer deserializer;
     final private Serializer serializer;
-    private Database db;
+    final private Database db;
 //    final static List<String> oneWordResponses = Arrays.asList("OK", "PONG", "QUEUED", "ERR", "BUSY", "WRONGTYPE","(nil)");
     final static List<String> oneWordCommands = Arrays.asList("OK", "ERROR", "PING", "QUIT", "FLUSHDB", "SAVE", "DBSIZE", "FLUSHALL",
             "TIME", "INFO");
@@ -42,7 +42,7 @@ public class RESPHandler {
                 }
                 break;
             case 2:
-                if(!Arrays.asList("GET", "DEL", "EXISTS", "TYPE").contains(command[0])){
+                if(!Arrays.asList("GET", "DEL", "EXISTS", "TYPE", "INCR", "DECR").contains(command[0])){
                     throw new IllegalArgumentException("Invalid command");
                 }
                 break;
@@ -126,6 +126,20 @@ public class RESPHandler {
                     return "ERR - wrong number of arguments for 'EXISTS' command";
                 }
                 return db.exists(command[1]) ? "(integer) 1" : "(integer) 0";
+            case "INCR":
+                if(command.length != 2) {
+                    return "ERR - wrong number of arguments for 'INCR' command";
+                }
+                return db.increment(command[1])+"";
+//                return "OK";
+            case "DECR":
+                if(command.length != 2) {
+                    return "ERR - wrong number of arguments for 'DECR' command";
+                }
+                return db.decrement(command[1])+"";
+//                return "OK";
+            case "LPUSH":
+
             case "TYPE":
                 if(command.length != 2) {
                     return "ERR - wrong number of arguments for 'TYPE' command";

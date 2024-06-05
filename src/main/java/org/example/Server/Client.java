@@ -5,10 +5,10 @@ import org.example.RESPHandler;
 import java.io.*;
 import java.net.*;
 
-public class SimpleClient {
+public class Client {
     final private RESPHandler RESPHandler;
     final static int PORT = 6379;
-    public SimpleClient() {
+    public Client() {
         RESPHandler = new RESPHandler();
     }
     public void start(){
@@ -48,7 +48,7 @@ public class SimpleClient {
 
 
     public static void main(String[] args) {
-        SimpleClient client = new SimpleClient();
+        Client client = new Client();
         client.start();
     }
 }
