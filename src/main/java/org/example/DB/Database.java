@@ -1,6 +1,8 @@
 package org.example.DB;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class Database {
         HashMap<String, Object> keyValues;
@@ -22,9 +24,6 @@ public class Database {
         }
         public boolean exists(String key) {
             return keyValues.containsKey(key);
-        }
-        public String getType(String key) {
-            return valueTypes.get(key);
         }
         public int getDBSize() {
             return keyValues.size();
@@ -65,6 +64,22 @@ public class Database {
         public void flushDB() {
             keyValues.clear();
             valueTypes.clear();
+        }
+        public String insertValuesAtHead(String key, List<String> values) {
+            List<String> list = keyValues.get(key) == null ? new ArrayList<>() : (List<String>)keyValues.get(key);
+            for(String value : values) {
+                list.add(0, value);
+            }
+            set(key, list);
+            return "(integer) " + list.size();
+        }
+        public String insertValuesAtTail(String key, List<String> values) {
+            List<String> list = keyValues.get(key) == null ? new ArrayList<>() : (List<String>)keyValues.get(key);
+            for (String value : values) {
+                list.add(value);
+            }
+            set(key, list);
+            return "(integer) " + list.size();
         }
 
 }

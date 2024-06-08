@@ -28,18 +28,23 @@ public class Client {
             System.out.print("redis-cli> ");
             String input;
             while ((input = userInput.readLine())!=null) {
-                RESPHandler.verifyRequest(input);
-                String serializedRequest = RESPHandler.serialize(input);
-                System.out.println("Sending to server serialized command: " + serializedRequest);
-                out.println(serializedRequest);
-                StringBuilder serverResponse = new StringBuilder();
-                String serverInput;
-                while (!(serverInput = in.readLine()).isEmpty()) {
-                    serverResponse.append(serverInput + "\r\n");
+                try {
+                    RESPHandler.verifyRequest(input);
+                    String serializedRequest = RESPHandler.serialize(input);
+                    System.out.println("Sending to server serialized command: " + serializedRequest);
+                    out.println(serializedRequest);
+                    StringBuilder serverResponse = new StringBuilder();
+                    String serverInput;
+                    while (!(serverInput = in.readLine()).isEmpty()) {
+                        serverResponse.append(serverInput + "\r\n");
+                    }
+                    System.out.println("RESP Response: " + serverResponse);
+                    System.out.println("Server response: " + RESPHandler.deserialize(serverResponse.toString()));
+                    System.out.print("redis-cli> ");
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                    System.out.print("redis-cli> ");
                 }
-                System.out.println("RESP Response: " + serverResponse);
-                System.out.println("Server response: " + RESPHandler.deserialize(serverResponse.toString()));
-                System.out.print("redis-cli> ");
             }
 
             // Close the connection

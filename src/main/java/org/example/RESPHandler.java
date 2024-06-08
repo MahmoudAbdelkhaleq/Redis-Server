@@ -38,27 +38,27 @@ public class RESPHandler extends Thread{
         }
         int length = command.length;
         String commandName = command[0].toUpperCase();
-        switch (length){
-            case 1:
-                if (!oneWordCommands.contains(commandName)) {
-                    throw new IllegalArgumentException("Invalid command");
-                }
-                break;
-            case 2:
-                if(!Arrays.asList("GET", "DEL", "EXISTS", "TYPE", "INCR", "DECR").contains(commandName)){
-                    throw new IllegalArgumentException("Invalid command");
-                }
-                break;
-            case 3:
-                if(!commandName.equals("SET") && !commandName.equals("LPUSH") && !commandName.equals("RPUSH")){
-                    throw new IllegalArgumentException("Invalid command");
-                }
-                break;
-            default:
-                if(!commandName.equals("LPUSH") && !commandName.equals("RPUSH")){
-                    throw new IllegalArgumentException("Invalid command");
-                }
+        if(oneWordCommands.contains(commandName)) {
+            if(length != 1)
+                throw new IllegalArgumentException(commandName + " doesn't take any arguments");
+            return;
         }
+        if(Arrays.asList("GET", "DEL", "EXISTS", "TYPE", "INCR", "DECR").contains(commandName)){
+            if(length != 2)
+                throw new IllegalArgumentException(commandName + " takes only one argument");
+            return;
+        }
+        if(commandName.equals("SET")){
+            if(length != 3)
+                throw new IllegalArgumentException("SET takes two arguments");
+            return;
+        }
+        if(commandName.equals("LPUSH") || commandName.equals("RPUSH")) {
+            if(length < 3)
+                throw new IllegalArgumentException(commandName + " takes at least two arguments");
+            return;
+        }
+        throw new IllegalArgumentException("Invalid command");
     }
     public String handleRequest(String request) {
         System.out.println("Command: " + request);
@@ -72,7 +72,7 @@ public class RESPHandler extends Thread{
     public String handleStringCommand(String request) {
         String [] commandParts = request.split(" ");
         if(commandParts.length == 0) {
-            return "ERR - empty command";
+            throw new IllegalArgumentException("ERR - empty command");
         }
         Command command = null;
         if(commandParts.length == 1) {
@@ -100,71 +100,43 @@ public class RESPHandler extends Thread{
             if(command != null) {
                 return command.execute();
             }
-            return "ERR - undefined command";
         }
         String commandName = commandParts[0].toUpperCase();
         switch(commandName) {
             case "SET":
-                if(commandParts.length != 3) {
-                    return "ERR - wrong number of arguments for 'SET' command";
-                }
                 command = new SETCommand(commandParts[1], commandParts[2], db);
                 break;
             case "GET":
-                if(commandParts.length != 2) {
-                    return "ERR - wrong number of arguments for 'GET' command";
-                }
                 command = new GETCommand(commandParts[1], db);
                 break;
             case "DEL":
-                if(commandParts.length != 2) {
-                    return "ERR - wrong number of arguments for 'DEL' command";
-                }
-                command = new GETCommand(commandParts[1], db);
+                command = new DELCommand(commandParts[1], db);
                 break;
             case "EXISTS":
-                if(commandParts.length != 2) {
-                    return "ERR - wrong number of arguments for 'EXISTS' command";
-                }
                 command = new EXISTSCommand(commandParts[1], db);
                 break;
             case "INCR":
-                if(commandParts.length != 2) {
-                    return "ERR - wrong number of arguments for 'INCR' command";
-                }
                 command = new INCRCommand(commandParts[1], db);
                 break;
             case "DECR":
-                if(commandParts.length != 2) {
-                    return "ERR - wrong number of arguments for 'DECR' command";
-                }
                 command = new DECRCommand(commandParts[1], db);
                 break;
             case "LPUSH":
-                if(commandParts.length < 3) {
-                    return "ERR - wrong number of arguments for 'LPUSH' command";
-                }
                 String [] values = Arrays.copyOfRange(commandParts, 2, commandParts.length);
-//                command = new LPUSHCommand(command[1], values, db);
+                command = new LPUSHCommand(commandParts[1], Arrays.asList(values), db);
                 break;
             case "RPUSH":
-                if(commandParts.length < 3) {
-                    return "ERR - wrong number of arguments for 'RPUSH' command";
-                }
-                String [] values1 = Arrays.copyOfRange(commandParts, 2, commandParts.length);
-//                command = new RPUSHCommand(command[1], values1, db);
+                values = Arrays.copyOfRange(commandParts, 2, commandParts.length);
+                command = new RPUSHCommand(commandParts[1], Arrays.asList(values), db);
                 break;
             case "TYPE":
-                if(commandParts.length != 2) {
-                    return "ERR - wrong number of arguments for 'TYPE' command";
-                }
                 command = new TYPECommand(commandParts[1], db);
                 break;
         }
         if(command != null) {
             return command.execute();
         }
-        return "ERR - undefined command";
+        throw new IllegalArgumentException("ERR - undefined command");
     }
 
 }
