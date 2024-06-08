@@ -32,9 +32,10 @@ public class Database {
 
         public int increment(String key) {
             if(!keyValues.containsKey(key)) {
-                keyValues.put(key, 0);
+                set(key, 1);
+                return 1;
             }
-            if(keyValues.get(key) instanceof Integer) {
+            if(valueTypes.get(key).equals(Integer.class.getName())) {
                 keyValues.put(key, (Integer)keyValues.get(key) + 1);
                 return (Integer)keyValues.get(key);
             }
@@ -44,15 +45,26 @@ public class Database {
         }
         public int decrement(String key) {
             if(!keyValues.containsKey(key)) {
-                keyValues.put(key, 0);
+                set(key, -1);
+                return -1;
             }
-            if(keyValues.get(key) instanceof Integer) {
+            if(valueTypes.get(key).equals(Integer.class.getName())) {
                 keyValues.put(key, (Integer)keyValues.get(key) - 1);
                 return (Integer)keyValues.get(key);
             }
             else {
                 throw new IllegalArgumentException("Value is not an integer");
             }
+        }
+        public String type(String key) {
+            if(!keyValues.containsKey(key)) {
+                return "(nil)";
+            }
+            return valueTypes.get(key);
+        }
+        public void flushDB() {
+            keyValues.clear();
+            valueTypes.clear();
         }
 
 }

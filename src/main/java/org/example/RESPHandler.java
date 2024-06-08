@@ -1,5 +1,7 @@
 package org.example;
 
+import org.example.Commands.*;
+import org.example.Commands.OneWordCommand.*;
 import org.example.DB.Database;
 import org.example.Serialize.Deserializer;
 import org.example.Serialize.Serializer;
@@ -12,7 +14,7 @@ public class RESPHandler extends Thread{
     final private Serializer serializer;
     final private Database db;
 //    final static List<String> oneWordResponses = Arrays.asList("OK", "PONG", "QUEUED", "ERR", "BUSY", "WRONGTYPE","(nil)");
-    final static List<String> oneWordCommands = Arrays.asList("PING", "QUIT", "FLUSHDB", "SAVE", "DBSIZE", "FLUSHALL",
+    final static List<String> oneWordCommands = Arrays.asList("PING", "QUIT", "FLUSHDB", "SAVE", "DBSIZE",
             "TIME", "INFO");
     public RESPHandler() {
         deserializer = new Deserializer();
@@ -22,7 +24,7 @@ public class RESPHandler extends Thread{
     public String serialize(String request) {
         return serializer.serialize(request);
     }
-    public Object deserialize(String response) {
+    public String deserialize(String response) {
         return deserializer.deserialize(response);
     }
     public void verifyRequest(String request) {
@@ -35,123 +37,134 @@ public class RESPHandler extends Thread{
             return;
         }
         int length = command.length;
+        String commandName = command[0].toUpperCase();
         switch (length){
             case 1:
-                if (!oneWordCommands.contains(command[0].toUpperCase())) {
+                if (!oneWordCommands.contains(commandName)) {
                     throw new IllegalArgumentException("Invalid command");
                 }
                 break;
             case 2:
-                if(!Arrays.asList("GET", "DEL", "EXISTS", "TYPE", "INCR", "DECR").contains(command[0])){
+                if(!Arrays.asList("GET", "DEL", "EXISTS", "TYPE", "INCR", "DECR").contains(commandName)){
                     throw new IllegalArgumentException("Invalid command");
                 }
                 break;
             case 3:
-                if(!command[0].equals("SET")){
+                if(!commandName.equals("SET") && !commandName.equals("LPUSH") && !commandName.equals("RPUSH")){
                     throw new IllegalArgumentException("Invalid command");
                 }
                 break;
             default:
-                throw new IllegalArgumentException("Invalid command");
+                if(!commandName.equals("LPUSH") && !commandName.equals("RPUSH")){
+                    throw new IllegalArgumentException("Invalid command");
+                }
         }
     }
     public String handleRequest(String request) {
         System.out.println("Command: " + request);
-        Object command = deserialize(request);
+        String command = deserialize(request);
         System.out.println("Deserialized command: " + command);
         if(command instanceof String) {
-            return handleStringCommand((String) command);
-        }
-        if(command instanceof String[]) {
-            return handleArrayCommand((String[]) command);
-        }
-        if(command instanceof Integer) {
-            return handleIntegerCommand((Integer) command);
-        }
-        if(command instanceof Error) {
-            return handleErrorCommand((Error) command);
+            return handleStringCommand(command);
         }
         return "OK";
     }
-    public String handleStringCommand(String command) {
-        switch(command) {
-            case "Time":
-                return String.valueOf(System.currentTimeMillis());
-            case "INFO":
-                return "Server is running on port 6379";
-            case "PING":
-                return "PONG";
-            case "DBSIZE":
-                return String.valueOf(db.getDBSize());
-            case "default":
-                return "OK";
-        }
-        return "ERR - undefined command";
-    }
-    public String handleIntegerCommand(Integer num) {
-        return num+"";
-    }
-    public String handleErrorCommand(Error err){
-        return err.toString();
-    }
-    public String handleArrayCommand(String[] command) {
-        if(command.length == 0) {
+    public String handleStringCommand(String request) {
+        String [] commandParts = request.split(" ");
+        if(commandParts.length == 0) {
             return "ERR - empty command";
         }
-        String commandName = command[0];
+        Command command = null;
+        if(commandParts.length == 1) {
+            request = request.toUpperCase();
+            switch (request) {
+                case "TIME":
+                    command = new TIMECommand();
+                    break;
+                case "INFO":
+                    command = new INFOCommand();
+                    break;
+                case "PING":
+                    command = new PINGCommand();
+                    break;
+                case "DBSIZE":
+                    command = new DBSIZECommand(db);
+                    break;
+                case "FLUSHDB":
+                    command = new FLUSHDBCommand(db);
+                    break;
+                case "SAVE":
+                    command = new SAVECommand();
+                    break;
+            }
+            if(command != null) {
+                return command.execute();
+            }
+            return "ERR - undefined command";
+        }
+        String commandName = commandParts[0].toUpperCase();
         switch(commandName) {
             case "SET":
-                if(command.length != 3) {
+                if(commandParts.length != 3) {
                     return "ERR - wrong number of arguments for 'SET' command";
                 }
-                db.set(command[1], command[2]);
-                return "OK";
+                command = new SETCommand(commandParts[1], commandParts[2], db);
+                break;
             case "GET":
-                if(command.length != 2) {
+                if(commandParts.length != 2) {
                     return "ERR - wrong number of arguments for 'GET' command";
                 }
-                Object value = db.get(command[1]);
-                if(value == null) {
-                    return null;
-                }
-                return value.toString();
+                command = new GETCommand(commandParts[1], db);
+                break;
             case "DEL":
-                if(command.length != 2) {
+                if(commandParts.length != 2) {
                     return "ERR - wrong number of arguments for 'DEL' command";
                 }
-                db.delete(command[1]);
-                return "OK";
+                command = new GETCommand(commandParts[1], db);
+                break;
             case "EXISTS":
-                if(command.length != 2) {
+                if(commandParts.length != 2) {
                     return "ERR - wrong number of arguments for 'EXISTS' command";
                 }
-                return db.exists(command[1]) ? "(integer) 1" : "(integer) 0";
+                command = new EXISTSCommand(commandParts[1], db);
+                break;
             case "INCR":
-                if(command.length != 2) {
+                if(commandParts.length != 2) {
                     return "ERR - wrong number of arguments for 'INCR' command";
                 }
-                return db.increment(command[1])+"";
-//                return "OK";
+                command = new INCRCommand(commandParts[1], db);
+                break;
             case "DECR":
-                if(command.length != 2) {
+                if(commandParts.length != 2) {
                     return "ERR - wrong number of arguments for 'DECR' command";
                 }
-                return db.decrement(command[1])+"";
-//                return "OK";
+                command = new DECRCommand(commandParts[1], db);
+                break;
             case "LPUSH":
-
+                if(commandParts.length < 3) {
+                    return "ERR - wrong number of arguments for 'LPUSH' command";
+                }
+                String [] values = Arrays.copyOfRange(commandParts, 2, commandParts.length);
+//                command = new LPUSHCommand(command[1], values, db);
+                break;
+            case "RPUSH":
+                if(commandParts.length < 3) {
+                    return "ERR - wrong number of arguments for 'RPUSH' command";
+                }
+                String [] values1 = Arrays.copyOfRange(commandParts, 2, commandParts.length);
+//                command = new RPUSHCommand(command[1], values1, db);
+                break;
             case "TYPE":
-                if(command.length != 2) {
+                if(commandParts.length != 2) {
                     return "ERR - wrong number of arguments for 'TYPE' command";
                 }
-                String type = db.getType(command[1]);
-                if(type == null) {
-                    return "(nil)";
-                }
-                return type;
-//            case "default":
-//                return "OK";
+                command = new TYPECommand(commandParts[1], db);
+                break;
+        }
+        if(command != null) {
+            return command.execute();
         }
         return "ERR - undefined command";
     }
+
 }

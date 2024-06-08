@@ -1,7 +1,13 @@
 package org.example.Serialize;
 
 
+import java.util.Arrays;
+import java.util.List;
+
 public class Serializer {
+    final static List<String> oneWordResponses = Arrays.asList("OK", "PONG", "QUEUED", "ERR", "BUSY", "WRONGTYPE","(nil)");
+    final static List<String> oneWordCommands = Arrays.asList("PING", "QUIT", "FLUSHDB", "SAVE", "DBSIZE", "FLUSHALL",
+            "TIME", "INFO");
     public String serialize(String command) {
         if(command == null || command.isEmpty()) {
             return "$-1\r\n";
@@ -11,7 +17,10 @@ public class Serializer {
         String [] commandArray = command.split(" ");
         // handle one word commands
         if(commandArray.length == 1) {
-            return "+" + commandArray[0] + "\r\n";
+            if(oneWordResponses.contains(commandArray[0]) || oneWordCommands.contains(commandArray[0])){
+                return "+" + commandArray[0] + "\r\n";
+            }
+            return "$" + commandArray[0].length() + "\r\n" + commandArray[0] + "\r\n";
         }
         // If the command is an array,
         serializedCommand = "*" + commandArray.length + "\r\n";

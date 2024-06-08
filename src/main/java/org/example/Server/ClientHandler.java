@@ -26,12 +26,10 @@ class ClientHandler extends Thread {
             while (true) {
                 System.out.println("Waiting for client input...");
                 StringBuilder request = new StringBuilder();
-                System.out.println("check 1");
                 request.append(in.readLine() + "\r\n");
                 if(request.toString().equalsIgnoreCase("exit")) {
                     break;
                 }
-                System.out.println("check 2");
                 while (!(clientInput = in.readLine()).isEmpty()) {
                     request.append(clientInput+ "\r\n");
                 }
@@ -40,7 +38,9 @@ class ClientHandler extends Thread {
                     String response = RESPHandler.handleRequest(request.toString());
                     System.out.println("response: " + response);
                     // Respond to the client
-                    out.println(RESPHandler.serialize(response));
+                    String serializedResponse = RESPHandler.serialize(response);
+                    System.out.println("Sending to client: " + serializedResponse);
+                    out.println(serializedResponse);
                 }
                 catch (IllegalArgumentException e){
                     out.println(RESPHandler.serialize("-ERR " + e.getMessage()));

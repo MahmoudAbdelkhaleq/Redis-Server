@@ -23,19 +23,23 @@ public class Client {
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
             BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in));
 
+
             // Read user input and send it to the server
+            System.out.print("redis-cli> ");
             String input;
             while ((input = userInput.readLine())!=null) {
                 RESPHandler.verifyRequest(input);
                 String serializedRequest = RESPHandler.serialize(input);
                 System.out.println("Sending to server serialized command: " + serializedRequest);
                 out.println(serializedRequest);
-                StringBuilder serverResponse = new StringBuilder(in.readLine());
+                StringBuilder serverResponse = new StringBuilder();
                 String serverInput;
                 while (!(serverInput = in.readLine()).isEmpty()) {
-                    serverResponse.append(serverInput);
+                    serverResponse.append(serverInput + "\r\n");
                 }
-                System.out.println("Server response: " + serverResponse);
+                System.out.println("RESP Response: " + serverResponse);
+                System.out.println("Server response: " + RESPHandler.deserialize(serverResponse.toString()));
+                System.out.print("redis-cli> ");
             }
 
             // Close the connection

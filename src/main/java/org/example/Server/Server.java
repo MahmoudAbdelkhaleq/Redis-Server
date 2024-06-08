@@ -23,33 +23,8 @@ public class Server {
                 // Create input and output streams for communication
                 BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+                // create client handler to handle that specific client as a thread
                 new ClientHandler(clientSocket, in, out, RESPHandler).start();
-
-                // Read and process the client input
-//                String clientInput;
-//                while (true) {
-//                    System.out.println("Waiting for client input...");
-//                    StringBuilder request = new StringBuilder();
-//                    request.append(in.readLine() + "\r\n");
-//                    if(request.toString().equalsIgnoreCase("exit")) {
-//                        break;
-//                    }
-//                    while (!(clientInput = in.readLine()).isEmpty()) {
-//                        request.append(clientInput+ "\r\n");
-//                    }
-//                    System.out.println("Received from client: " + request);
-//                    try{
-//                        String response = RESPHandler.handleRequest(request.toString());
-//                        System.out.println("response: " + response);
-//                        // Respond to the client
-//                        out.println(RESPHandler.serialize(response));
-//                    }
-//                    catch (IllegalArgumentException e){
-//                        out.println(RESPHandler.serialize("-ERR " + e.getMessage()));
-//                    }
-//                }
-//                // Close the connection with the client
-//                clientSocket.close();
             }
 
         } catch (IOException e) {
