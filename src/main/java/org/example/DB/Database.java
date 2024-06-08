@@ -65,21 +65,19 @@ public class Database {
             keyValues.clear();
             valueTypes.clear();
         }
-        public String insertValuesAtHead(String key, List<String> values) {
+        public void insertValuesAtHead(String key, List<String> values) {
             List<String> list = keyValues.get(key) == null ? new ArrayList<>() : (List<String>)keyValues.get(key);
             for(String value : values) {
                 list.add(0, value);
             }
             set(key, list);
-            return "(integer) " + list.size();
         }
-        public String insertValuesAtTail(String key, List<String> values) {
+        public void insertValuesAtTail(String key, List<String> values) {
             List<String> list = keyValues.get(key) == null ? new ArrayList<>() : (List<String>)keyValues.get(key);
             for (String value : values) {
                 list.add(value);
             }
             set(key, list);
-            return "(integer) " + list.size();
         }
 
 }

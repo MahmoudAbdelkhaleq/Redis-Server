@@ -15,6 +15,7 @@ public class RPUSHCommand implements Command{
     }
     @Override
     public String execute() {
-        return db.insertValuesAtTail(key, values);
+        db.insertValuesAtTail(key, values);
+        return "(integer) " + ((List)(db.get(key))).size();
     }
 }

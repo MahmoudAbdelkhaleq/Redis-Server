@@ -15,7 +15,7 @@ public class LPUSHCommand implements Command{
     }
     @Override
     public String execute() {
-        return db.insertValuesAtHead(key, values);
-//        return "(integer) " + (List)(db.get(key)).size();
+        db.insertValuesAtHead(key, values);
+        return "(integer) " + ((List)(db.get(key))).size();
     }
 }
