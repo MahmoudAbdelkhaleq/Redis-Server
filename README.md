@@ -12,6 +12,7 @@ This repository contains a Redis server trial implementation with RESP (REdis Se
 ## Overview
 
 This project demonstrates a basic implementation of a Redis-like server. It handles client requests using the RESP messaging protocol, commonly used by Redis. The server processes commands, stores data in memory, and responds according to the Redis protocol.
+The code is implemented using the command pattern, where each command is represented as an object. The server receives the command object, executes it, and returns the response to the client.
 
 ## Features
 
